@@ -4,6 +4,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'viewmodels/home_view_model.dart';
+import 'viewmodels/contact_view_model.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
@@ -44,18 +47,21 @@ class MyApp extends StatelessWidget {
       seedColor: const Color(0xFF0C6E73),
       brightness: Brightness.light,
     );
-    return MaterialApp.router(
-      title: 'KAŞ Likya',
-      debugShowCheckedModeBanner: false,
-      routerConfig: _router,
-      theme: ThemeData(
-        colorScheme: colorScheme,
-        textTheme: GoogleFonts.latoTextTheme(),
-        appBarTheme: const AppBarTheme(
-          centerTitle: false,
-          elevation: 0,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => HomeViewModel()),
+        ChangeNotifierProvider(create: (_) => ContactViewModel()),
+      ],
+      child: MaterialApp.router(
+        title: 'KAŞ Likya',
+        debugShowCheckedModeBanner: false,
+        routerConfig: _router,
+        theme: ThemeData(
+          colorScheme: colorScheme,
+          textTheme: GoogleFonts.latoTextTheme(),
+          appBarTheme: const AppBarTheme(centerTitle: false, elevation: 0),
+          useMaterial3: true,
         ),
-        useMaterial3: true,
       ),
     );
   }
@@ -69,7 +75,8 @@ class AppShell extends StatefulWidget {
   State<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin {
+class _AppShellState extends State<AppShell>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
 
@@ -109,10 +116,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Colors.grey.shade50,
-              Colors.teal.shade50.withOpacity(0.3),
-            ],
+            colors: [Colors.grey.shade50, Colors.teal.shade50.withOpacity(0.3)],
           ),
         ),
         child: Column(
@@ -132,7 +136,10 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
               child: SafeArea(
                 bottom: false,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   child: Row(
                     children: [
                       // Logo image (tap to enlarge)
@@ -179,10 +186,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                             ),
                           ),
                           builder: (context, value, child) {
-                            return Transform.scale(
-                              scale: value,
-                              child: child,
-                            );
+                            return Transform.scale(scale: value, child: child);
                           },
                         ),
                       ),
@@ -210,15 +214,18 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                       ),
                       const Spacer(),
                       if (isWide)
-                        ...navItems.map((n) => Padding(
-                              padding: const EdgeInsets.only(left: 8),
-                              child: _ModernNavButton(navItem: n),
-                            )),
+                        ...navItems.map(
+                          (n) => Padding(
+                            padding: const EdgeInsets.only(left: 8),
+                            child: _ModernNavButton(navItem: n),
+                          ),
+                        ),
                       if (!isWide)
                         Builder(
                           builder: (context) => IconButton(
                             icon: const Icon(Icons.menu),
-                            onPressed: () => Scaffold.of(context).openEndDrawer(),
+                            onPressed: () =>
+                                Scaffold.of(context).openEndDrawer(),
                           ),
                         ),
                     ],
@@ -230,10 +237,10 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: Center(
-        child: ConstrainedBox(
+                  child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 1200),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
                       child: widget.child,
                     ),
                   ),
@@ -291,17 +298,22 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                         ],
                       ),
                     ),
-                    ...navItems.map((n) => ListTile(
-                          leading: Icon(n.icon, color: Theme.of(context).colorScheme.primary),
-                          title: Text(
-                            n.label,
-                            style: const TextStyle(fontWeight: FontWeight.w500),
-                          ),
-                          onTap: () {
-                            Navigator.pop(context);
-                            context.go(n.path);
-                          },
-                        )),
+                    ...navItems.map(
+                      (n) => ListTile(
+                        leading: Icon(
+                          n.icon,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        title: Text(
+                          n.label,
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          context.go(n.path);
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -342,8 +354,8 @@ class _ModernNavButtonState extends State<_ModernNavButton> {
             backgroundColor: isActive
                 ? Theme.of(context).colorScheme.primary
                 : _isHovered
-                    ? Colors.grey.shade100
-                    : Colors.transparent,
+                ? Colors.grey.shade100
+                : Colors.transparent,
             foregroundColor: isActive ? Colors.white : Colors.black87,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -394,10 +406,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
     _controller.forward();
   }
 
@@ -424,130 +433,127 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           ),
           SingleChildScrollView(
-      child: Column(
-        children: [
-            const SizedBox(height: 40),
-            // Hero Section
-            SlideTransition(
-              position: _slideAnimation,
-              child: ScaleTransition(
-                scale: _scaleAnimation,
-                child: Container(
-                  padding: const EdgeInsets.all(40),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                        Colors.cyan.shade100.withOpacity(0.2),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                      width: 2,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.teal.shade100,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          'Kaş Belediyesi Kuruluşu',
-                          style: TextStyle(
-                            color: Colors.teal.shade800,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Hoş Geldiniz',
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 48,
-                            ),
-                      ),
-          const SizedBox(height: 12),
-                      ShaderMask(
-                        shaderCallback: (bounds) => LinearGradient(
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                // Hero Section
+                SlideTransition(
+                  position: _slideAnimation,
+                  child: ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: Container(
+                      padding: const EdgeInsets.all(40),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                           colors: [
-                            Theme.of(context).colorScheme.primary,
-                            Colors.cyan.shade600,
+                            Theme.of(
+                              context,
+                            ).colorScheme.primary.withOpacity(0.1),
+                            Colors.cyan.shade100.withOpacity(0.2),
                           ],
-                        ).createShader(bounds),
-                        child: Text(
-                          'KAŞ Likya Turizm',
-                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.2),
+                          width: 2,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.teal.shade100,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              'Kaş Belediyesi Kuruluşu',
+                              style: TextStyle(
+                                color: Colors.teal.shade800,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 42,
-                                color: Colors.white,
+                                fontSize: 13,
                               ),
-                        ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'Hoş Geldiniz',
+                            style: Theme.of(context).textTheme.headlineLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 48,
+                                ),
+                          ),
+                          const SizedBox(height: 12),
+                          ShaderMask(
+                            shaderCallback: (bounds) => LinearGradient(
+                              colors: [
+                                Theme.of(context).colorScheme.primary,
+                                Colors.cyan.shade600,
+                              ],
+                            ).createShader(bounds),
+                            child: Text(
+                              'KAŞ Likya Turizm',
+                              style: Theme.of(context).textTheme.headlineLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 42,
+                                    color: Colors.white,
+                                  ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Kaş Belediyesi KAŞ Likya Turizm Ticaret Madencilik Ltd. Şti.',
+                            style: Theme.of(context).textTheme.titleLarge,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Duyurular, etkinlikler ve işletmelerimizi burada bulabilirsiniz.',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 32),
+                          _AnimatedButton(
+                            onPressed: () => context.go('/isletmeler'),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('İşletmelerimizi Keşfedin'),
+                                SizedBox(width: 8),
+                                Icon(Icons.arrow_forward, size: 20),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-          Text(
-                        'Kaş Belediyesi KAŞ Likya Turizm Ticaret Madencilik Ltd. Şti.',
-                        style: Theme.of(context).textTheme.titleLarge,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Duyurular, etkinlikler ve işletmelerimizi burada bulabilirsiniz.',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey.shade600,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 32),
-                      _AnimatedButton(
-                        onPressed: () => context.go('/isletmeler'),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('İşletmelerimizi Keşfedin'),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward, size: 20),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 60),
-            // Features Grid
-            _FeaturesGrid(),
-            const SizedBox(height: 40),
-            _AnnouncementsSection(
-              announcements: const [
-                _Announcement(
-                  title: 'JEAN MONNET Burs Programı 2026-2027 Duyurusu',
-                  date: '26 Eylül 2025',
+                const SizedBox(height: 60),
+                // Features Grid
+                _FeaturesGrid(),
+                const SizedBox(height: 40),
+                Consumer<HomeViewModel>(
+                  builder: (context, vm, _) => _AnnouncementsSection(
+                    announcements: vm.announcements
+                        .map((a) => _Announcement(title: a.title, date: a.date))
+                        .toList(),
+                    onSeeAll: vm.copySeeAllLink,
+                  ),
                 ),
-                _Announcement(
-                  title: '11. Uluslararası Enerji Verimliliği Forumu',
-                  date: '01 Eylül 2025',
-                ),
-                _Announcement(
-                  title: 'T.C. İstanbul Kent Üniversitesi Duyurusu',
-                  date: '18 Ağustos 2025',
-                ),
-              ],
-              onSeeAll: () async {
-                const url = 'https://www.kas.bel.tr/';
-                await Clipboard.setData(const ClipboardData(text: url));
-              },
-            ),
-            const SizedBox(height: 40),
+                const SizedBox(height: 40),
               ],
             ),
           ),
@@ -588,19 +594,19 @@ class _FeaturesGrid extends StatelessWidget {
     ];
 
     return LayoutBuilder(
-            builder: (context, constraints) {
+      builder: (context, constraints) {
         final crossAxisCount = constraints.maxWidth > 800 ? 4 : 2;
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
             childAspectRatio: 1.1,
           ),
           itemCount: features.length,
-                itemBuilder: (context, index) {
+          itemBuilder: (context, index) {
             return TweenAnimationBuilder<double>(
               duration: Duration(milliseconds: 400 + (index * 100)),
               tween: Tween(begin: 0.0, end: 1.0),
@@ -609,9 +615,9 @@ class _FeaturesGrid extends StatelessWidget {
                   scale: value,
                   child: _FeatureCard(feature: features[index]),
                 );
-                },
-              );
-            },
+              },
+            );
+          },
         );
       },
     );
@@ -686,19 +692,13 @@ class _FeatureCardState extends State<_FeatureCard> {
             const SizedBox(height: 16),
             Text(
               widget.feature.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               widget.feature.description,
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
               textAlign: TextAlign.center,
             ),
           ],
@@ -713,6 +713,8 @@ class _Announcement {
   final String date;
   const _Announcement({required this.title, required this.date});
 }
+
+// ViewModels moved to viewmodels/ directory
 
 class _AnnouncementsSection extends StatelessWidget {
   const _AnnouncementsSection({
@@ -744,53 +746,63 @@ class _AnnouncementsSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.campaign, color: Theme.of(context).colorScheme.primary),
+              Icon(
+                Icons.campaign,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               const SizedBox(width: 12),
               Text(
                 'Duyurular',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const Spacer(),
-              TextButton(
-                onPressed: onSeeAll,
-                child: const Text('Tümünü Gör'),
-              )
+              TextButton(onPressed: onSeeAll, child: const Text('Tümünü Gör')),
             ],
           ),
           const SizedBox(height: 16),
-          ...announcements.map((a) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
+          ...announcements.map(
+            (a) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
                   ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    leading: CircleAvatar(
-                      backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                      child: Icon(Icons.event_note, color: Theme.of(context).colorScheme.primary),
+                  leading: CircleAvatar(
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.1),
+                    child: Icon(
+                      Icons.event_note,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
-                    title: Text(
-                      a.title,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(
-                      a.date,
-                      style: TextStyle(color: Colors.grey.shade600),
-                    ),
+                  ),
+                  title: Text(
+                    a.title,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(
+                    a.date,
+                    style: TextStyle(color: Colors.grey.shade600),
                   ),
                 ),
-              )),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -843,23 +855,20 @@ class BusinessesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppShell(
       child: SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             const SizedBox(height: 20),
             Text(
               'İşletmelerimiz',
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               'Kaş\'ın doğal güzelliklerini koruyarak hizmet sunuyoruz',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 32),
             _ModernBusinessSection(
@@ -883,7 +892,8 @@ class BusinessesPage extends StatelessWidget {
             _ModernBusinessSection(
               emoji: '🪨',
               title: 'Kaş Gömbe Taş Ocağı',
-              subtitle: 'Belediyeye ait altyapı projelerine doğal kaynak desteği.',
+              subtitle:
+                  'Belediyeye ait altyapı projelerine doğal kaynak desteği.',
               description:
                   'Kaş\'ın Gömbe bölgesinde faaliyet gösteren Kaş Gömbe Taş Ocağı, belediyenin taş, kum ve dolgu malzemesi ihtiyacını karşılamak üzere kurulmuştur.',
               features: const [
@@ -936,9 +946,8 @@ class BusinessesPage extends StatelessWidget {
                       Expanded(
                         child: Text(
                           'Belediyecilikten Gelen Güven, Halk İçin Hizmet',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -1030,13 +1039,16 @@ class _ModernBusinessSectionState extends State<_ModernBusinessSection>
           onExit: (_) => setState(() => _isHovered = false),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            transform: Matrix4.identity()..translate(0.0, _isHovered ? -8.0 : 0.0),
+            transform: Matrix4.identity()
+              ..translate(0.0, _isHovered ? -8.0 : 0.0),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: widget.gradientColors[1].withOpacity(_isHovered ? 0.3 : 0.15),
+                  color: widget.gradientColors[1].withOpacity(
+                    _isHovered ? 0.3 : 0.15,
+                  ),
                   blurRadius: _isHovered ? 30 : 15,
                   offset: Offset(0, _isHovered ? 12 : 6),
                 ),
@@ -1044,13 +1056,13 @@ class _ModernBusinessSectionState extends State<_ModernBusinessSection>
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   // Image Carousel Section
                   SizedBox(
                     height: 280,
-                width: double.infinity,
+                    width: double.infinity,
                     child: Stack(
                       children: [
                         _AssetCarousel(
@@ -1103,23 +1115,27 @@ class _ModernBusinessSectionState extends State<_ModernBusinessSection>
                     ),
                   ),
                   // Content Section
-            Padding(
+                  Padding(
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           widget.title,
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: widget.gradientColors.map((c) => c.withOpacity(0.2)).toList(),
+                              colors: widget.gradientColors
+                                  .map((c) => c.withOpacity(0.2))
+                                  .toList(),
                             ),
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -1173,46 +1189,51 @@ class _ModernBusinessSectionState extends State<_ModernBusinessSection>
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              ...widget.features.map((feature) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          margin: const EdgeInsets.only(top: 6),
-                                          width: 6,
-                                          height: 6,
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              colors: widget.gradientColors,
-                                            ),
-                                            shape: BoxShape.circle,
+                              ...widget.features.map(
+                                (feature) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        margin: const EdgeInsets.only(top: 6),
+                                        width: 6,
+                                        height: 6,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: widget.gradientColors,
+                                          ),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          feature,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey.shade700,
+                                            height: 1.5,
                                           ),
                                         ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Text(
-                                            feature,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey.shade700,
-                                              height: 1.5,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
                         if (widget.extra != null) ...[
                           const SizedBox(height: 16),
                           Container(
-              padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
-                                colors: widget.gradientColors.map((c) => c.withOpacity(0.1)).toList(),
+                                colors: widget.gradientColors
+                                    .map((c) => c.withOpacity(0.1))
+                                    .toList(),
                               ),
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -1252,10 +1273,7 @@ class _ModernBusinessSectionState extends State<_ModernBusinessSection>
 }
 
 class _AssetCarousel extends StatefulWidget {
-  const _AssetCarousel({
-    required this.assetPrefix,
-    this.fallbackSingleImage,
-  });
+  const _AssetCarousel({required this.assetPrefix, this.fallbackSingleImage});
 
   final String assetPrefix;
   final String? fallbackSingleImage;
@@ -1281,15 +1299,18 @@ class _AssetCarouselState extends State<_AssetCarousel> {
       final manifestJson = await rootBundle.loadString('AssetManifest.json');
       final Map<String, dynamic> manifest = json.decode(manifestJson);
       final List<String> all = manifest.keys.cast<String>().toList();
-      final List<String> filtered = all
-          .where((p) => p.startsWith(widget.assetPrefix))
-          .where((p) =>
-              p.endsWith('.png') ||
-              p.endsWith('.jpg') ||
-              p.endsWith('.jpeg') ||
-              p.endsWith('.webp'))
-          .toList()
-        ..sort();
+      final List<String> filtered =
+          all
+              .where((p) => p.startsWith(widget.assetPrefix))
+              .where(
+                (p) =>
+                    p.endsWith('.png') ||
+                    p.endsWith('.jpg') ||
+                    p.endsWith('.jpeg') ||
+                    p.endsWith('.webp'),
+              )
+              .toList()
+            ..sort();
 
       if (filtered.isEmpty && widget.fallbackSingleImage != null) {
         filtered.add(widget.fallbackSingleImage!);
@@ -1332,10 +1353,7 @@ class _AssetCarouselState extends State<_AssetCarousel> {
       return Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Colors.grey.shade200,
-              Colors.grey.shade300,
-            ],
+            colors: [Colors.grey.shade200, Colors.grey.shade300],
           ),
         ),
         child: Center(
@@ -1390,7 +1408,9 @@ class _AssetCarouselState extends State<_AssetCarousel> {
                     margin: const EdgeInsets.symmetric(horizontal: 3),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
-                      color: i == _current ? Colors.white : Colors.white.withOpacity(0.5),
+                      color: i == _current
+                          ? Colors.white
+                          : Colors.white.withOpacity(0.5),
                     ),
                   ),
                 ),
@@ -1444,11 +1464,18 @@ class _BackgroundSlideshowState extends State<_BackgroundSlideshow>
       final manifestJson = await rootBundle.loadString('AssetManifest.json');
       final Map<String, dynamic> manifest = json.decode(manifestJson);
       final List<String> all = manifest.keys.cast<String>().toList();
-      final List<String> filtered = all
-          .where((p) => p.startsWith(widget.assetPrefix))
-          .where((p) => p.endsWith('.png') || p.endsWith('.jpg') || p.endsWith('.jpeg') || p.endsWith('.webp'))
-          .toList()
-        ..sort();
+      final List<String> filtered =
+          all
+              .where((p) => p.startsWith(widget.assetPrefix))
+              .where(
+                (p) =>
+                    p.endsWith('.png') ||
+                    p.endsWith('.jpg') ||
+                    p.endsWith('.jpeg') ||
+                    p.endsWith('.webp'),
+              )
+              .toList()
+            ..sort();
 
       if (filtered.isEmpty) {
         filtered.add(widget.fallbackSingleImage);
@@ -1461,7 +1488,9 @@ class _BackgroundSlideshowState extends State<_BackgroundSlideshow>
       });
 
       if (_images.length > 1) {
-        _timer = Timer.periodic(Duration(milliseconds: widget.intervalMs), (t) async {
+        _timer = Timer.periodic(Duration(milliseconds: widget.intervalMs), (
+          t,
+        ) async {
           if (!mounted) return;
           await _fadeController.forward(from: 0);
           setState(() {
@@ -1523,32 +1552,19 @@ class ContactPage extends StatelessWidget {
   static const double _lat = 36.20205974539514;
   static const double _lng = 29.64003517685688;
 
-  String get _staticMapUrl {
-    // OpenStreetMap static image via Mapbox-style tile server alternatives are limited.
-    // Use Wikimedia maps tile for a simple static preview (proper attribution recommended on production).
-    // Here we assemble a static image from Maps Location API (free alternatives are limited);
-    // As a fallback, we show a clickable link if the image fails.
-    final zoom = 16;
-    final width = 800; // pixels (Flutter will fit it into layout)
-    final height = 400;
-    // Using OSM Static (third-party) style endpoint commonly mirrored
-    return 'https://staticmap.openstreetmap.de/staticmap.php?center='
-        '$_lat,$_lng&zoom=$zoom&size=${width}x$height&maptype=mapnik&markers=$_lat,$_lng,lightblue1';
-  }
-
   @override
   Widget build(BuildContext context) {
     return AppShell(
       child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             const SizedBox(height: 20),
             Text(
               'İletişim',
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -1575,34 +1591,42 @@ class ContactPage extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.apartment, color: Theme.of(context).colorScheme.primary),
+                        Icon(
+                          Icons.apartment,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             'Kaş Likya Turizm Ticaret Madencilik Ltd. Şti.',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-            ),
-          ],
-        ),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 14),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.phone, color: Theme.of(context).colorScheme.primary),
-                        const SizedBox(width: 10),
-                        const Expanded(
-                          child: Text(
-                            '+90 (___) ___ __ __',
-                          ),
+                        Icon(
+                          Icons.phone,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
+                        const SizedBox(width: 10),
+                        const Expanded(child: Text('+90 (___) ___ __ __')),
                       ],
                     ),
                     const SizedBox(height: 10),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.email, color: Theme.of(context).colorScheme.primary),
+                        Icon(
+                          Icons.email,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                         const SizedBox(width: 10),
                         const Expanded(
                           child: Column(
@@ -1637,7 +1661,8 @@ class ContactPage extends StatelessWidget {
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      urlTemplate:
+                          'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                       subdomains: const ['a', 'b', 'c'],
                       userAgentPackageName: 'com.kaslikya.app',
                       retinaMode: true,
@@ -1648,7 +1673,11 @@ class ContactPage extends StatelessWidget {
                           point: const latlng.LatLng(_lat, _lng),
                           width: 48,
                           height: 48,
-                          child: const Icon(Icons.location_on, color: Colors.red, size: 36),
+                          child: const Icon(
+                            Icons.location_on,
+                            color: Colors.red,
+                            size: 36,
+                          ),
                         ),
                       ],
                     ),
@@ -1668,15 +1697,9 @@ class ContactPage extends StatelessWidget {
             Row(
               children: [
                 ElevatedButton.icon(
-                  onPressed: () async {
-                    final url = 'https://www.openstreetmap.org/?mlat=$_lat&mlon=$_lng#map=16/$_lat/$_lng';
-                    await Clipboard.setData(ClipboardData(text: url));
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Harita bağlantısı kopyalandı. Tarayıcıya yapıştırabilirsiniz.')),
-                      );
-                    }
-                  },
+                  onPressed: () => context
+                      .read<ContactViewModel>()
+                      .copyMapLinkToClipboard(context),
                   icon: const Icon(Icons.directions),
                   label: const Text('Haritada Aç'),
                 ),
@@ -1690,7 +1713,8 @@ class ContactPage extends StatelessWidget {
   }
 }
 
-class _CorporatePageState extends State<CorporatePage> with TickerProviderStateMixin {
+class _CorporatePageState extends State<CorporatePage>
+    with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
 
@@ -1750,16 +1774,13 @@ class _CorporatePageState extends State<CorporatePage> with TickerProviderStateM
               Text(
                 'Kurumsal',
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Yönetim kadromuz ve ekibimiz hakkında bilgiler',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey.shade600,
-                ),
+                style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 40),
               Container(
@@ -1786,9 +1807,8 @@ class _CorporatePageState extends State<CorporatePage> with TickerProviderStateM
                         const SizedBox(width: 12),
                         Text(
                           'Şirket Müdürü',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -1809,8 +1829,8 @@ class _CorporatePageState extends State<CorporatePage> with TickerProviderStateM
                   Text(
                     'Ekibimiz',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -1843,11 +1863,7 @@ class _CorporatePageState extends State<CorporatePage> with TickerProviderStateM
 }
 
 class _Person {
-  const _Person({
-    required this.name,
-    required this.title,
-    required this.role,
-  });
+  const _Person({required this.name, required this.title, required this.role});
   final String name;
   final String title;
   final String role;
@@ -1878,7 +1894,9 @@ class _ModernPersonCardState extends State<_ModernPersonCard> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Theme.of(context).colorScheme.primary.withOpacity(_isHovered ? 0.2 : 0.1),
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withOpacity(_isHovered ? 0.2 : 0.1),
               blurRadius: _isHovered ? 20 : 10,
               offset: Offset(0, _isHovered ? 6 : 3),
             ),
@@ -1901,7 +1919,9 @@ class _ModernPersonCardState extends State<_ModernPersonCard> {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -1927,9 +1947,14 @@ class _ModernPersonCardState extends State<_ModernPersonCard> {
                     ),
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
